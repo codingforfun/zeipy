@@ -67,7 +67,6 @@ class MyDelegate(btle.DefaultDelegate):
 
 # connect
 zei = btle.Peripheral('f1:05:a5:9c:2e:9b', 'random', iface=0)
-zei._mgmtCmd("pair")
 
 try:
     print zei.status()
