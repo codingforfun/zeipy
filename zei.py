@@ -70,18 +70,61 @@ class ZeiDelegate(btle.DefaultDelegate):
             _log.info("Notification from hndl: %s - %r", cHandle, data)
 
 
+class ZeiDiscoveryDelegate(btle.DefaultDelegate):
+    def __init__(self, scanner, periph):
+        btle.DefaultDelegate.__init__(self)
+        self.scanner = scanner
+        self.periph = periph
+
+    def handleDiscovery(self, dev, isNewDev, isNewData):
+        if not dev.addr == 'f1:05:a5:9c:2e:9b':
+            return
+        _log.info("Device %s (%s), RSSI=%d dB", dev.addr, dev.addrType, dev.rssi)
+        for (adtype, desc, value) in dev.getScanData():
+            _log.info("  %s = %s", desc, value)
+        # reconnect
+
+        # bluepy can only do one thing at a time, so stop scanning while trying to connect
+        # this is not supported by bluepy
+        #self.scanner.stop()
+
+        try:
+            self.periph.connect(dev)
+            self.scanner.stop_scanning = True
+        except:
+            # re
+            self.scanner.start()
+            pass
+
+
+class ZeiDiscovery(btle.Scanner):
+
+    def __init__(self, periph=None, **kwargs):
+        self.zei = periph
+        btle.Scanner.__init__(self, **kwargs)
+        #self.withDelegate(ZeiDiscoveryDelegate(self, self.zei))
+        #self.stop_scanning = False
+
+    def reconnect(self):
+        self.iface=self.zei.iface
+        self.clear()
+        self.start()
+        while self.zei.addr not in self.scanned:
+            self.process(timeout=2)
+        self.stop()
+        self.zei.connect(self.scanned[self.zei.addr])
+
 def main():
 
-    zei = Zei('f1:05:a5:9c:2e:9b', 'random', iface=0)
+    zei = Zei('f1:05:a5:9c:2e:9b', 'random', iface=1)
+    scanner = ZeiDiscovery(zei)
 
     while True:
         try:
-            zei.waitForNotifications(5.0)
+             zei.waitForNotifications(timeout=None)
         except Exception as e:
             _log.exception(e)
-
-            # todo: Not just connect. Check if device is advertising first.
-            zei.connect('f1:05:a5:9c:2e:9b', 'random', iface=0)
+            scanner.reconnect()
 
     zei.disconnect()
 
