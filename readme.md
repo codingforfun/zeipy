@@ -6,31 +6,64 @@ Basically Zei° is a Bluetooth LE device.
 
 It seams to support the following characteristics (check read_characteristics.py)
 
-| Idx | Characteristics                            | Properties    |   Handle | Notes 
-| --- | ------------------------------------------ | ------------- | -------- | ------
-|     | Standard profiles                          |               |          |
-|  0  | Device Name                                | READ WRITE    |        3 |
-|  1  | Appearance                                 | READ          |        5 |
-|  2  | Peripheral Preferred Connection Parameters | READ          |        7 |
-|  3  | Manufacturer Name String                   | READ          |       11 |
-|  4  | Model Number String                        | READ          |       13 |
-|  5  | Serial Number String                       | READ          |       15 |
-|  6  | Hardware Revision String                   | READ          |       17 |
-|  7  | Firmware Revision String                   | READ          |       19 |
-|  8  | Software Revision String                   | READ          |       21 |
-|  9  | System ID                                  | READ          |       23 |
-| 10  | PnP ID                                     | READ          |       25 |
-| 11  | Tx Power Level                             | READ          |       28 |
-| 12  | Battery Level                              | NOTIFY READ   |       31 |
-|     |                                            |               |          |
-|     | Zei° specific                              |               |          |
-| 13  | c7e70001-c847-11e6-8175-8c89a55d403c       | NOTIFY WRITE  |       35 | unknown notification
-| 14  | c7e70012-c847-11e6-8175-8c89a55d403c       | READ INDICATE |       39 | this is the currently active side
-| 15  | c7e70011-c847-11e6-8175-8c89a55d403c       | READ          |       42 | new value on every change (timestamp??)
-| 16  | c7e70021-c847-11e6-8175-8c89a55d403c       | INDICATE      |       45 | indicates switching off the device
-| 17  | c7e70022-c847-11e6-8175-8c89a55d403c       | WRITE         |       48 | unknown (probably for firmware update?)
-| 18  | c7e70041-c847-11e6-8175-8c89a55d403c       | WRITE         |       51 |
-| 19  | c7e70042-c847-11e6-8175-8c89a55d403c       | WRITE         |       53 |
+| SrvUUID   | Service                              |
+|:----------|:-------------------------------------|
+| 0x1800    | Generic Access                       |
+| 0x1804    | Tx Power                             |
+| 0x1801    | Generic Attribute                    |
+| 0x0010    | c7e70010-c847-11e6-8175-8c89a55d403c | Zei° Orientation Service
+| 0x180f    | Battery Service                      |
+| 0x0020    | c7e70020-c847-11e6-8175-8c89a55d403c | Zei° LED Button Service
+| 0x180a    | Device Information                   |
+| 0x0040    | c7e70040-c847-11e6-8175-8c89a55d403c | Zei° Test Service
+| 0x0000    | c7e70000-c847-11e6-8175-8c89a55d403c | Zei° DFU Service
+
+Standard. See: https://www.bluetooth.com/specifications/gatt/characteristics
+
+| CharUUID   | Characteristics                            | Properties    |   Handle
+|:-----------|:-------------------------------------------|:--------------|---------:
+| 0x2a00     | Device Name                                | READ WRITE    |        3 |
+| 0x2a01     | Appearance                                 | READ          |        5 |
+| 0x2a04     | Peripheral Preferred Connection Parameters | READ          |        7 |
+| 0x2a29     | Manufacturer Name String                   | READ          |       11 |
+| 0x2a24     | Model Number String                        | READ          |       13 |
+| 0x2a25     | Serial Number String                       | READ          |       15 |
+| 0x2a27     | Hardware Revision String                   | READ          |       17 |
+| 0x2a26     | Firmware Revision String                   | READ          |       19 |
+| 0x2a28     | Software Revision String                   | READ          |       21 |
+| 0x2a23     | System ID                                  | READ          |       23 |
+| 0x2a50     | PnP ID                                     | READ          |       25 |
+| 0x2a07     | Tx Power Level                             | READ          |       28 |
+| 0x2a19     | Battery Level                              | NOTIFY READ   |       31 |  uint8_t 0 - 100
+
+Zei° specific
+| CharUUID   | Characteristics                            | Properties    |   Handle
+|:-----------|:-------------------------------------------|:--------------|---------:
+| 0x0001     | c7e70001-c847-11e6-8175-8c89a55d403c       | NOTIFY WRITE  |       35 |
+| 0x0012     | c7e70012-c847-11e6-8175-8c89a55d403c       | READ INDICATE |       39 |
+| 0x0011     | c7e70011-c847-11e6-8175-8c89a55d403c       | READ          |       42 |
+| 0x0021     | c7e70021-c847-11e6-8175-8c89a55d403c       | INDICATE      |       45 |
+| 0x0022     | c7e70022-c847-11e6-8175-8c89a55d403c       | WRITE         |       48 |
+| 0x0041     | c7e70041-c847-11e6-8175-8c89a55d403c       | WRITE         |       51 |
+| 0x0042     | c7e70042-c847-11e6-8175-8c89a55d403c       | WRITE         |       53 |
+
+- 0x0001 h35 NOTIFY WRITE -- Switch to DFU Bootloader
+
+- 0x0011 h42 READ         -- Accelerometer
+  - 3x uint16_t: x,y,z
+- 0x0012 h39 READ INDICATE -- Active side index
+  - uint8_t
+
+- 0x0021 h45 INDICATE -- Button pushed indicator
+  - uint8_t : 0: short, 1: long
+- 0x0022 h48 WRITE -- LED
+
+
+
+| 0x0041     | c7e70041-c847-11e6-8175-8c89a55d403c       | WRITE         |       51 |
+| 0x0042     | c7e70042-c847-11e6-8175-8c89a55d403c       | WRITE         |       53
+
+
     
     
 ## Current state
